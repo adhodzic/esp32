@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ado server</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3pro.css">
+    <script>
+        window.setInterval(async function(){
+            var res = await axios.get('http://esp32server.ddns.net/data');
+            var data = await res.data;
+            if(data["temp"] != null){
+                document.getElementById("temp").innerHTML = data["temp"] + "&#8451;";
+            }
+            if(data["hum"] != null){
+                document.getElementById("hum").innerHTML = data["hum"] + "%";
+            }
+            if(data["light"] != null){
+                document.getElementById("light").innerHTML = data["light"];
+            }
+            if(data["station1_data"] != null){
+                document.getElementById("sta1_data").innerHTML = data["station1_data"] + "&#8451;";
+            }
+            if(data["switch_state"] != null){
+                document.getElementById("switch-button").checked = data["switch_state"];
+            }
+            
+
+            data["station1_signal"] = parseInt(data["station1_signal"]);
+            if(data["station1_signal"] != null && data["station1_signal"] != 1){
+                console.log(data["station1_signal"] >= -30)
+                if(data["station1_signal"] >= -30){
+                    document.getElementById("bar").style.display = "none";
+                    document.getElementById("bar1").style.display = "none";
+                    document.getElementById("bar2").style.display = "none";
+                    document.getElementById("bar3").style.display = "none";
+                    document.getElementById("bar4").style.display = "none";
+                    document.getElementById("bar5").style.display = "flex";
+                    document.getElementById("bar-none").style.display = "none";
+                }else if(data["station1_signal"] < -30 && data["station1_signal"] >= -67){
+                    document.getElementById("bar").style.display = "none";
+                    document.getElementById("bar1").style.display = "none";
+                    document.getElementById("bar2").style.display = "none";
+                    document.getElementById("bar3").style.display = "none";
+                    document.getElementById("bar4").style.display = "flex";
+                    document.getElementById("bar5").style.display = "none";
+                    document.getElementById("bar-none").style.display = "none";
+                }else if(data["station1_signal"] < -67 && data["station1_signal"] >= -70){
+                    document.getElementById("bar").style.display = "none";
+                    document.getElementById("bar1").style.display = "none";
+                    document.getElementById("bar2").style.display = "none";
+                    document.getElementById("bar3").style.display = "flex";
+                    document.getElementById("bar4").style.display = "none";
+                    document.getElementById("bar5").style.display = "none";
+                    document.getElementById("bar-none").style.display = "none";
+                }else if(data["station1_signal"] < -70 && data["station1_signal"] >= -80){
+                    document.getElementById("bar").style.display = "none";
+                    document.getElementById("bar1").style.display = "none";
+                    document.getElementById("bar2").style.display = "flex";
+                    document.getElementById("bar3").style.display = "none";
+                    document.getElementById("bar4").style.display = "none";
+                    document.getElementById("bar5").style.display = "none";
+                    document.getElementById("bar-none").style.display = "none";
+                }
+                else if(data["station1_signal"] < -80 && data["station1_signal"] >= -90){
+                    document.getElementById("bar").style.display = "none";
+                    document.getElementById("bar1").style.display = "flex";
+                    document.getElementById("bar2").style.display = "none";
+                    document.getElementById("bar3").style.display = "none";
+                    document.getElementById("bar4").style.display = "none";
+                    document.getElementById("bar5").style.display = "none";
+                    document.getElementById("bar-none").style.display = "none";
+                }
+                else if(data["station1_signal"] < -90){
+                    document.getElementById("bar").style.display = "flex";
+                    document.getElementById("bar1").style.display = "none";
+                    document.getElementById("bar2").style.display = "none";
+                    document.getElementById("bar3").style.display = "none";
+                    document.getElementById("bar4").style.display = "none";
+                    document.getElementById("bar5").style.display = "none";
+                    document.getElementById("bar-none").style.display = "none";
+                }
+                
+                //document.getElementById("sta1_sig").innerHTML = data["station1_signal"];
+            }else{
+                document.getElementById("bar").style.display = "none";
+                document.getElementById("bar1").style.display = "none";
+                document.getElementById("bar2").style.display = "none";
+                document.getElementById("bar3").style.display = "none";
+                document.getElementById("bar4").style.display = "none";
+                document.getElementById("bar5").style.display = "none";
+                document.getElementById("bar-none").style.display = "flex";
+                document.getElementById("sta1_data").innerHTML = "Stanica nije u dometu...";
+            }
+        }, 3000);
+
+
+        async function updateSwitch(checkbox){
+            var res = await axios.post(`http://esp32server.ddns.net/data?value=${checkbox.checked}`,{});
+            //console.log(res);
+        }
+
+        window.onload = function () {
+            var chart = new CanvasJS.Chart("chartContainer", {
+                animationEnabled: false,  
+                title:{
+                    text: "Temperatura sobe"
+                },
+                axisY: {
+                    title: "Temperatura",
+                    valueFormatString: "#0.",
+                    suffix: "C°",
+                    minimum: 0,
+                    maximum: 40,
+                    stripLines: [{
+                        value: 23,
+                        label: "Prosjek"
+                    }]
+                },
+                axisX: {
+                    intervalType: "minute",
+                    valueFormatString: "HH:mm:ss",
+                    labelMaxWidth: 100, // change label width accordingly
+                },
+                data: [{
+                    yValueFormatString: "#,### C°",
+                    xValueFormatString: "HH:mm:ss",
+                    type: "spline",
+                    dataPoints: []
+                }],
+                
+            });
+            chart.render();
+
+            setInterval(function(){
+                updateChart(chart);
+                chart.render();
+            },1000);
+        }
+        async function updateChart(chart){
+            let dataP = new Array;
+            var res = await axios.get(`http://esp32server.ddns.net/data_graph`);
+            //console.log(res.data);
+            let strArr = res.data.split("\n");
+            avg = 0;
+            strArr.forEach(e => {
+                //console.log(e);
+                if(e != ""){
+                    let d = JSON.parse(e);
+                    if(d.x != ""){
+                        dataP.push({
+                            x: new Date("01 Jan 1970 " + d.x + " GMT+2"),
+                            y: d.y
+                        })
+                        avg += d.y;
+                    }
+                }  
+            });
+            chart.options.data[0].dataPoints = dataP;
+            chart.options.axisY.stripLines[0].value = avg;
+            //console.log(chart.options.data[0].dataPoints);
+        }
+        
+    </script>
+
+    <style lang="css">
+        .switch {
+        position: relative;
+        display: inline-block;
+        width: 32px;
+        height: 17px;
+        transform: translateY(3px);
+        }
+
+        .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+        }
+
+        .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+        }
+
+        .slider:before {
+        position: absolute;
+        content: "";
+        height: 13px;
+        width: 13px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        }
+
+        input:checked + .slider {
+        background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+        -webkit-transform: translateX(15px);
+        -ms-transform: translateX(15px);
+        transform: translateX(15px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+        border-radius: 34px;
+        }
+
+        .slider.round:before {
+        border-radius: 50%;
+        }
+
+
+        .signal-strength {
+            width: 60px;
+            height: 30px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            align-items: baseline;
+        }
+
+        .signal-strength .bar {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            /*padding-left: 1px;*/
+            width: 13%;
+            border: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .signal-strength .bar-1, .signal-strength-1 .bar-1, .signal-strength-2 .bar-1, .signal-strength-3 .bar-1, .signal-strength-4 .bar-1, .signal-strength-5 .bar-1 {
+            height: 20%;
+        }
+
+        .signal-strength .bar-2, .signal-strength-1 .bar-2, .signal-strength-2 .bar-2, .signal-strength-3 .bar-2, .signal-strength-4 .bar-2, .signal-strength-5 .bar-2 {
+            height: 40%;
+        }
+
+        .signal-strength .bar-3, .signal-strength-1 .bar-3, .signal-strength-2 .bar-3, .signal-strength-3 .bar-3, .signal-strength-4 .bar-3, .signal-strength-5 .bar-3 {
+            height: 60%;
+        }
+
+        .signal-strength .bar-4, .signal-strength-1 .bar-4, .signal-strength-2 .bar-4, .signal-strength-3 .bar-4, .signal-strength-4 .bar-4, .signal-strength-5 .bar-4 {
+            height: 80%;
+        }
+
+        .signal-strength .bar-5, .signal-strength-1 .bar-5, .signal-strength-2 .bar-5, .signal-strength-3 .bar-5, .signal-strength-4 .bar-5, .signal-strength-5 .bar-5 {
+            height: 100%;
+        }
+
+        .signal-strength-1 .bar-1 {
+            background-color: #999;
+        }
+
+        .signal-strength-2 .bar-1, .signal-strength-2 .bar-2 {
+            background-color: #777;
+        }
+
+        .signal-strength-3 .bar-1, .signal-strength-3 .bar-2, .signal-strength-3 .bar-3 {
+            background-color: #555;
+        }
+
+        .signal-strength-4 .bar-1, .signal-strength-4 .bar-2, .signal-strength-4 .bar-3, .signal-strength-4 .bar-4 {
+            background-color: #333;
+        }
+
+        .signal-strength-5 .bar-1, .signal-strength-5 .bar-2, .signal-strength-5 .bar-3, .signal-strength-5 .bar-4, .signal-strength-5 .bar-5 {
+            background-color: #111;
+        }
+
+        .signal-strength-none .bar-1, .signal-strength-none .bar-2, .signal-strength-none .bar-3, .signal-strength-none .bar-4, .signal-strength-none .bar-5 {
+            background-color: rgb(255, 101, 101);
+        }
+        .graph {
+                height: 370px;
+                width: 50%;
+            }
+        @media only screen and (max-width: 600px) {
+            .graph {
+                height: 370px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dobrodošli</h1>
+    <span>Temperatura sobe: </span>
+    <span id="temp">Učitavanje...</span>
+    <br/>
+    <span>Vlaga sobe: </span>
+    <span id="hum">Učitavanje...</span>
+    <br/>
+    <span>Svjetlost sobe: </span>
+    <span id="light">Učitavanje...</span>
+    <br/>
+    <br/>
+    <br/>
+    <div id="sta1_sig" style="display: flex; flex-direction: row; align-items: baseline;">
+        <div class="label-signal" style="margin-right: 10px;">Jačina signala stanice: </div>
+
+        <div id = "bar-none" class="signal-strength signal-strength-none " style="display: none;">
+            <div class="bar bar-1"></div>
+            <div class="bar bar-2"></div>
+            <div class="bar bar-3"></div>
+            <div class="bar bar-4"></div>
+            <div class="bar bar-5"></div>
+        </div>
+    
+        <div id = "bar" class="signal-strength">
+            <div class="bar bar-1"></div>
+            <div class="bar bar-2"></div>
+            <div class="bar bar-3"></div>
+            <div class="bar bar-4"></div>
+            <div class="bar bar-5"></div>
+        </div>
+          
+        <div id = "bar1" class="signal-strength signal-strength-1" style="display: none;">
+            <div class="bar bar-1"></div>
+            <div class="bar bar-2"></div>
+            <div class="bar bar-3"></div>
+            <div class="bar bar-4"></div>
+            <div class="bar bar-5"></div>
+        </div>
+          
+          <div id = "bar2" class="signal-strength signal-strength-2" style="display: none;">
+            <div class="bar bar-1"></div>
+              <div class="bar bar-2"></div>
+              <div class="bar bar-3"></div>
+              <div class="bar bar-4"></div>
+              <div class="bar bar-5"></div>
+          </div>
+          
+          <div id = "bar3" class="signal-strength signal-strength-3" style="display: none;">
+            <div class="bar bar-1"></div>
+              <div class="bar bar-2"></div>
+              <div class="bar bar-3"></div>
+              <div class="bar bar-4"></div>
+              <div class="bar bar-5"></div>
+          </div>
+          
+          <div id = "bar4" class="signal-strength signal-strength-4" style="display: none;">
+            <div class="bar bar-1"></div>
+              <div class="bar bar-2"></div>
+              <div class="bar bar-3"></div>
+              <div class="bar bar-4"></div>
+              <div class="bar bar-5"></div>
+          </div>
+          <div id = "bar5" class="signal-strength signal-strength-5" style="display: none;">
+            <div class="bar bar-1"></div>
+              <div class="bar bar-2"></div>
+              <div class="bar bar-3"></div>
+              <div class="bar bar-4"></div>
+              <div class="bar bar-5"></div>
+          </div>
+    </div>
+    <br/>
+    <span>Temperatura stanice: </span>
+    <span id="sta1_data">Učitavanje...</span>
+    <br/>
+    <!-- Rounded switch -->
+    <span>Prekidač: </span>
+    <span>
+        <label class="switch">
+            <input id="switch-button" onchange="updateSwitch(this)" type="checkbox">
+            <span class="slider round"></span>
+        </label>
+    </span>
+    
+
+    <div id="chartContainer" class="graph"></div>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</body>
+</html>
