@@ -1,0 +1,135 @@
+
+.switch {
+position: relative;
+display: inline-block;
+width: 32px;
+height: 17px;
+transform: translateY(3px);
+}
+
+.switch input { 
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #ccc;
+-webkit-transition: .4s;
+transition: .4s;
+}
+
+.slider:before {
+position: absolute;
+content: "";
+height: 13px;
+width: 13px;
+left: 2px;
+bottom: 2px;
+background-color: white;
+-webkit-transition: .4s;
+transition: .4s;
+}
+
+input:checked + .slider {
+background-color: #2196F3;
+}
+
+input:focus + .slider {
+box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+-webkit-transform: translateX(15px);
+-ms-transform: translateX(15px);
+transform: translateX(15px);
+}
+
+/* Rounded sliders */
+.slider.round {
+border-radius: 34px;
+}
+
+.slider.round:before {
+border-radius: 50%;
+}
+
+
+.signal-strength {
+    width: 60px;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: baseline;
+}
+
+.signal-strength .bar {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    /*padding-left: 1px;*/
+    width: 13%;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
+.signal-strength .bar-1, .signal-strength-1 .bar-1, .signal-strength-2 .bar-1, .signal-strength-3 .bar-1, .signal-strength-4 .bar-1, .signal-strength-5 .bar-1 {
+    height: 20%;
+}
+
+.signal-strength .bar-2, .signal-strength-1 .bar-2, .signal-strength-2 .bar-2, .signal-strength-3 .bar-2, .signal-strength-4 .bar-2, .signal-strength-5 .bar-2 {
+    height: 40%;
+}
+
+.signal-strength .bar-3, .signal-strength-1 .bar-3, .signal-strength-2 .bar-3, .signal-strength-3 .bar-3, .signal-strength-4 .bar-3, .signal-strength-5 .bar-3 {
+    height: 60%;
+}
+
+.signal-strength .bar-4, .signal-strength-1 .bar-4, .signal-strength-2 .bar-4, .signal-strength-3 .bar-4, .signal-strength-4 .bar-4, .signal-strength-5 .bar-4 {
+    height: 80%;
+}
+
+.signal-strength .bar-5, .signal-strength-1 .bar-5, .signal-strength-2 .bar-5, .signal-strength-3 .bar-5, .signal-strength-4 .bar-5, .signal-strength-5 .bar-5 {
+    height: 100%;
+}
+
+.signal-strength-1 .bar-1 {
+    background-color: #999;
+}
+
+.signal-strength-2 .bar-1, .signal-strength-2 .bar-2 {
+    background-color: #777;
+}
+
+.signal-strength-3 .bar-1, .signal-strength-3 .bar-2, .signal-strength-3 .bar-3 {
+    background-color: #555;
+}
+
+.signal-strength-4 .bar-1, .signal-strength-4 .bar-2, .signal-strength-4 .bar-3, .signal-strength-4 .bar-4 {
+    background-color: #333;
+}
+
+.signal-strength-5 .bar-1, .signal-strength-5 .bar-2, .signal-strength-5 .bar-3, .signal-strength-5 .bar-4, .signal-strength-5 .bar-5 {
+    background-color: #111;
+}
+
+.signal-strength-none .bar-1, .signal-strength-none .bar-2, .signal-strength-none .bar-3, .signal-strength-none .bar-4, .signal-strength-none .bar-5 {
+    background-color: rgb(255, 101, 101);
+}
+.graph {
+        height: 370px;
+        width: 50%;
+    }
+@media only screen and (max-width: 600px) {
+    .graph {
+        height: 370px;
+        width: 100%;
+    }
+}
