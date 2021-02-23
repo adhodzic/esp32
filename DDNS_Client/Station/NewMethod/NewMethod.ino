@@ -4,7 +4,6 @@
 //by Little_S@tan
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 
-byte transmitt_byte[9] = {0,0,31,32,33,34,35,36,37};
 byte buffer[61] = {0};
 void setup() {
     pinMode(8, OUTPUT);
@@ -29,7 +28,7 @@ void setup() {
     ELECHOUSE_cc1101.setSyncMode(2);        // Combined sync-word qualifier mode. 0 = No preamble/sync. 1 = 16 sync word bits detected. 2 = 16/16 sync word bits detected. 3 = 30/32 sync word bits detected. 4 = No preamble/sync, carrier-sense above threshold. 5 = 15/16 + carrier-sense above threshold. 6 = 16/16 + carrier-sense above threshold. 7 = 30/32 + carrier-sense above threshold.
     ELECHOUSE_cc1101.setSyncWord(211, 145); // Set sync word. Must be the same for the transmitter and receiver. (Syncword high, Syncword low)
     ELECHOUSE_cc1101.setAdrChk(1);          // Controls address check configuration of received packages. 0 = No address check. 1 = Address check, no broadcast. 2 = Address check and 0 (0x00) broadcast. 3 = Address check and 0 (0x00) and 255 (0xFF) broadcast.
-    ELECHOUSE_cc1101.setAddr(2);            // Address used for packet filtration. Optional broadcast addresses are 0 (0x00) and 255 (0xFF).
+    ELECHOUSE_cc1101.setAddr(4);            // Address used for packet filtration. Optional broadcast addresses are 0 (0x00) and 255 (0xFF).
     ELECHOUSE_cc1101.setWhiteData(0);       // Turn data whitening on / off. 0 = Whitening off. 1 = Whitening on.
     ELECHOUSE_cc1101.setPktFormat(0);       // Format of RX and TX data. 0 = Normal mode, use FIFOs for RX and TX. 1 = Synchronous serial mode, Data in on GDO0 and data out on either of the GDOx pins. 2 = Random TX mode; sends random data using PN9 generator. Used for test. Works as normal mode, setting 0 (00), in RX. 3 = Asynchronous serial mode, Data in on GDO0 and data out on either of the GDOx pins.
     ELECHOUSE_cc1101.setLengthConfig(1);    // 0 = Fixed packet length mode. 1 = Variable packet length mode. 2 = Infinite packet length mode. 3 = Reserved
@@ -75,7 +74,7 @@ if (ELECHOUSE_cc1101.CheckRxFifo(100)){
     Serial.println();
   }
   }
-  Serial.println(buffer[3]);
+  //Serial.println(buffer[3]);
   if(buffer[3] == 1){
     digitalWrite(8, HIGH);
   }else if(buffer[3] == 2){

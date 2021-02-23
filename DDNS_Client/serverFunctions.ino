@@ -2,6 +2,14 @@ void serverFunctions(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/index.html", String(), false);
   });
+
+  server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/main.js", "text/javascript");
+  });
+  
+  server.on("/main.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/main.css", "text/css");
+  });
   
   server.on("/data", HTTP_GET, [](AsyncWebServerRequest * request) {
     doc["temp"] = dht.readTemperature();
@@ -60,6 +68,26 @@ void serverFunctions(){
     } // for(int i=0;i<params;i++)
     request -> send(200);
   });
-  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  
+  server.on("/rgb", HTTP_POST, [](AsyncWebServerRequest * request) {
+    int params = request->params();
+    for (int i = 0; i < params; i++) {
+      AsyncWebParameter* p = request->getParam(i);
+      if (p->isFile()) { //p->isPost() is also true
+        //Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+      } else if (p->isPost()) {
+        //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+      } else {
+        //Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        const char* json = p->value().c_str();
+        deserializeJson(doc2, json);
+        obj2 = doc2.as<JsonObject>();
+        //r = obj2["r"];
+        //g = obj2["g"];
+        //b = obj2["b"];
+      }
+    } // for(int i=0;i<params;i++)
+    request -> send(200);
+  });
   server.begin();
 }

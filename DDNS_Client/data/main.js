@@ -88,26 +88,40 @@ window.setInterval(async function(){
 
 
 async function updateSwitch(checkbox){
-    var res = await axios.post(`http://esp32server.ddns.net/data?value=${checkbox.checked}`,{});
+    await axios.post(`http://esp32server.ddns.net/data?value=${checkbox.checked}`,{});
     //console.log(res);
 }
 
 window.onload = function () {
    
+    var isObjectEqual = function(object1, object2){
+        return object1.r === object2.r && object1.g === object2.g && object1.b === object2.b && object1.a === object2.a
+    }
 
     var colorWheel = new iro.ColorPicker("#colorWheelDemo", {
-        layout: [
-        { 
-          component: iro.ui.Wheel,
-          options: {
-            wheelLightness: true,
-            wheelAngle: 0,
-            wheelDirection: "anticlockwise"
-          } 
-        }
-        ]
-      
+        wheelLightness: true
     });
+
+    var _lastValue = colorWheel.color.rgba;
+
+    document.getElementById("colorWheelDemo").onclick = function(){
+        console.log(_lastValue, colorWheel.color.rgba)
+        if(!isObjectEqual(_lastValue, colorWheel.color.rgba)){
+            updateRGB()
+            _lastValue = colorWheel.color.rgba;
+        }
+    }
+
+    async function updateRGB(){
+        var myColor = colorWheel.color.rgba;
+        let colorObj = {"r": myColor.r.toString(),
+                    "g": myColor.g.toString(),
+                    "b": myColor.b.toString(),
+                    "a": colorWheel.color.value.toString()
+                }
+        let objectStr = JSON.stringify(colorObj)
+        await axios.post(`http://esp32server.ddns.net/rgb?value=${objectStr}`,{});
+    }
     
     var chart = new CanvasJS.Chart("chartContainer", {
         animationEnabled: false,  
@@ -141,9 +155,8 @@ window.onload = function () {
     chart.render();
 
     setInterval(function(){
-        var myColor = colorWheel.color.rgba;
-        console.log(myColor);
         updateChart(chart);
+        //updateRGB();
         chart.render();
     },1000);
 }

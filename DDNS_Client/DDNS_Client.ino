@@ -6,6 +6,7 @@
 #include "HTTPClient.h"
 #endif
 #include <ArduinoJson.h>
+#include "AsyncJson.h"
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 #include <Arduino.h>
 
@@ -25,6 +26,7 @@ String formattedDate;
 String dayStamp;
 String timeStamp;
 struct tm timeinfo;
+char* r,g,b;
 
 
 uint8_t temprature_sens_read();
@@ -40,7 +42,7 @@ const char* PARAM_INPUT = "value";
 StaticJsonDocument<300> doc;
 StaticJsonDocument<300> doc2;
 JsonObject root = doc.as<JsonObject>();
-JsonArray arr = doc2.to<JsonArray>();
+JsonObject obj2;
 String x[1440];
 long y_room[1440];
 String y_outside[1440];
@@ -65,7 +67,7 @@ time_t now1;
 
 time_t start1;
 time_t elapsed1;
-
+uint8_t dataArray[255];
 unsigned long temp = 0;
 struct timeval tv_now;
 unsigned long difference1;
